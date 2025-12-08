@@ -162,8 +162,7 @@ static void FTLFree(void *p, size_t size)
 
 static int open_file(const char *path, bool write)
 {
-    // 如果ssd文件存在，将其内容清空(O_TRUNC)
-    int flags = write ? (O_CREAT | O_RDWR | O_TRUNC) : O_RDONLY;
+    int flags = write ? (O_CREAT | O_RDWR) : O_RDONLY;
     int fd = open(path, flags, 0644);
     if (fd < 0)
     {

@@ -29,13 +29,14 @@ typedef struct {
 
 /* IO 数组 */
 typedef struct {
-    uint64_t len;    // IO数量
-    IOUnit *ioArray; // IO数组，访问方式ioArray[i]
+    uint64_t len;       // IO数量
+    char *inputFile;    // IO数组文件名
+    IOUnit ioUnit;      // IO数组成员
 } IOVector;
 
 /* 关键指标 */
 typedef struct {
-    uint32_t testIOCount;                   // IO数量
+    uint32_t testIOCount;               // 读IO数量
     double algorithmRunningDuration;    // 算法运行时长
     double accuracy;                    // 读IO准确率
     long memoryUse;                     // 内存占用 KB  (程序外工具统计)

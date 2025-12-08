@@ -115,7 +115,7 @@ int main() {
 
     // 写段：lpn=1..IO_NUM_WRITES
     for (uint64_t i = 0; i < IO_NUM_WRITES; i++) {
-        uint64_t lpn = LPN_MAX - 1- i;
+        uint64_t lpn = i;
         uint64_t ppn = rand_below(&seed, PPN_MAX);
         map_put(lpn, ppn);
         fprintf(trace, "1 %llu %llu\n",
@@ -141,17 +141,16 @@ int main() {
                     (unsigned long long)(i + 1),
                     (unsigned long long)IO_NUM_RANDOM, node_top);
         uint64_t op = rand_below(&seed, 2);
+        uint64_t lpn = rand_below(&seed, IO_NUM_WRITES);
+        uint64_t ppn = rand_below(&seed, PPN_MAX);
 
         if (op == 1) {
-            uint64_t lpn = rand_below(&seed, LPN_MAX);
-            uint64_t ppn = rand_below(&seed, PPN_MAX);
             map_put(lpn, ppn);
             fprintf(trace, "1 %llu %llu\n",
                     (unsigned long long)lpn,
                     (unsigned long long)ppn);
         }
         else {
-            uint64_t lpn = (LPN_MAX - IO_NUM_WRITES) + rand_below(&seed, IO_NUM_WRITES);
             uint64_t val;
             int ok = map_get(lpn, &val);
             uint64_t out = ok ? val : (uint64_t)-1;

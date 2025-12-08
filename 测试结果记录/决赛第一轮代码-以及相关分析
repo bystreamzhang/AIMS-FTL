@@ -130,5 +130,302 @@ Key Metrics:
 
 ## 10GB
 ```
+Welcome to HW project.
+The input file path is: ../trace2.txt
+The output file path is: ../output2.txt
+The validate file path is: ../read_result2.txt
+input io count = 501000000
+Processing IO 501000000 / 501000000
+================ Resource Report: AlgorithmRun summary ================
+Configures:
+  - Multi-threads: OFF 
+  - Total(Max) LPNS:     68719476736 pages (= 262144.000000 GB)
+  - Max Cache Pages (Entries) in CMT:   0 entries ( 48 B per entry) (about 0.000000 GB)
+  - CMT Hash Table Size:    134217728 buckets
+  - GTD Size:     134217728 entries (= 1.000000 GB)
+  - TPC Max Pages:    524288 pages (= 2.000000 GB)
+  - TPC Hash Table Size:    8388608 buckets
+Heap Memory (current / peak): 4319066392 B (4.022444 GB) / 4319066392 B (4.022444 GB)
+  - Control structures:   136 B (0.000000 GB)
+  - CMT entries:      0 B (0.000000 GB)
+  - GTD uses:      1073741824 B (1.000000 GB)
+  - CMT hash table:   0 B (0.000000 GB)
+  - free cmt entry cnt:     0 , 0 B (0.000000 GB)
+  - used cmt entry cnt:     0 , 0 B (0.000000 GB)
+  - CMT hit ratio:     -nan (0 / 0)
+  - TPC hit ratio:     0.996391 (499191680 / 501000000)
+  - CMT dirty entry handle cnt (not including FTLDestory):     0
+  - TPC dirty entry handle cnt (not including FTLDestory):     1180112
+  - TPC uses (include TPC hash table):      96468992 B (0.089844 GB)
+  - TPC pages:    524288 pages,  2147483648 B (2.000000 GB)
+SSD Usage (from filesystem stat):
+  - map.ssd size:   549755813888 B (512.000000 GB), blocks: 6864338944 B (6.392914 GB)
+SSD Logical write accounting (program-side):
+  - map pages written:     4833738752 B (4.501770 GB)
+  - map pages written cnt:     1180112 
+  - map pages read cnt:     336429 
+  - map max end offset:    549755813888 B (512.000000 GB)
+=====================================================
+algorithmRunningDuration:        37253569.000000 us
 
+Key Metrics:
+        testIOCount:                     500026
+        algorithmRunningDuration:        41628.900 (ms)
+        accuracy:                        100.00
+        memoryUse:                       0 (KB)
+
+指标写入文件 ./metrics.txt
+[1] + Done                       "/usr/bin/gdb" --interpreter=mi --tty=${DbgTerm} 0<"/tmp/Microsoft-MIEngine-In-xdgopr2l.lif" 1>"/tmp/Microsoft-MIEngine-Out-0ifcgkpw.e44"
+```
+
+## 改动后 样例
+
+```
+Welcome to HW project.
+The input file path is: ../dataset/input_random.txt
+The output file path is: ../dataset/output_random.txt
+The validate file path is: ../dataset/val_random.txt
+io count = 26048576
+inputFile = ../dataset/input_random.txt
+Start AlgorithmRun
+Progress: 99%
+================ Resource Report: AlgorithmRun summary ================
+Configures:
+  - Multi-threads: OFF 
+  - Total(Max) LPNS:     68719476736 pages (= 262144.000000 GB)
+  - Max Cache Pages (Entries) in CMT:   0 entries ( 48 B per entry) (about 0.000000 GB)
+  - CMT Hash Table Size:    134217728 buckets
+  - GTD Size:     134217728 entries (= 1.000000 GB)
+  - TPC Max Pages:    524288 pages (= 2.000000 GB)
+  - TPC Hash Table Size:    8388608 buckets
+Heap Memory (current / peak): 1395637155 B (1.299788 GB) / 1395637155 B (1.299788 GB)
+  - Control structures:   136 B (0.000000 GB)
+  - CMT entries:      0 B (0.000000 GB)
+  - GTD uses:      1073741824 B (1.000000 GB)
+  - CMT hash table:   0 B (0.000000 GB)
+  - free cmt entry cnt:     0 , 0 B (0.000000 GB)
+  - used cmt entry cnt:     0 , 0 B (0.000000 GB)
+  - CMT hit ratio:     -nan (0 / 0)
+  - TPC hit ratio:     0.998125 (25999747 / 26048576)
+  - CMT dirty entry handle cnt (not including FTLDestory):     0
+  - TPC dirty entry handle cnt (not including FTLDestory):     0
+  - TPC uses (include TPC hash table):      69843288 B (0.065047 GB)
+  - TPC pages:    48829 pages,  200003584 B (0.186268 GB)
+SSD Usage (from filesystem stat):
+  - map.ssd size:   549755813888 B (512.000000 GB), blocks: 4044525568 B (3.766758 GB)
+SSD Logical write accounting (program-side):
+  - map pages written:     0 B (0.000000 GB)
+  - map pages written cnt:     0 
+  - map pages read cnt:     0 
+  - map max end offset:    0 B (0.000000 GB)
+=====================================================
+
+Key Metrics:
+        ioCount:                         524609
+        algorithmRunningDuration:        9915.660 (ms)
+        accuracy:                        100.00
+        memoryUse:                       0 (KB)
+
+指标写入文件 ./metrics.txt
+[1] + Done                       "/usr/bin/gdb" --interpreter=mi --tty=${DbgTerm} 0<"/tmp/Microsoft-MIEngine-In-d3h4ff1y.b02" 1>"/tmp/Microsoft-MIEngine-Out-f5wil1ul.gqw"
+```
+
+## 改动文件输入输出后 6GB
+
+```
+Welcome to HW project.
+The input file path is: ../trace.txt
+The output file path is: ../output.txt
+The validate file path is: ../read_result.txt
+io count = 251000000
+inputFile = ../trace.txt
+Start AlgorithmRun
+Progress: 99%
+================ Resource Report: AlgorithmRun summary ================
+Configures:
+  - Multi-threads: OFF 
+  - Total(Max) LPNS:     68719476736 pages (= 262144.000000 GB)
+  - Max Cache Pages (Entries) in CMT:   0 entries ( 48 B per entry) (about 0.000000 GB)
+  - CMT Hash Table Size:    134217728 buckets
+  - GTD Size:     134217728 entries (= 1.000000 GB)
+  - TPC Max Pages:    524288 pages (= 2.000000 GB)
+  - TPC Hash Table Size:    8388608 buckets
+Heap Memory (current / peak): 3818934757 B (3.556660 GB) / 3818934757 B (3.556660 GB)
+  - Control structures:   136 B (0.000000 GB)
+  - CMT entries:      0 B (0.000000 GB)
+  - GTD uses:      1073741824 B (1.000000 GB)
+  - CMT hash table:   0 B (0.000000 GB)
+  - free cmt entry cnt:     0 , 0 B (0.000000 GB)
+  - used cmt entry cnt:     0 , 0 B (0.000000 GB)
+  - CMT hit ratio:     -nan (0 / 0)
+  - TPC hit ratio:     0.994086 (249515591 / 251000000)
+  - CMT dirty entry handle cnt (not including FTLDestory):     0
+  - TPC dirty entry handle cnt (not including FTLDestory):     724566
+  - TPC uses (include TPC hash table):      96468992 B (0.089844 GB)
+  - TPC pages:    524288 pages,  2147483648 B (2.000000 GB)
+SSD Usage (from filesystem stat):
+  - map.ssd size:   549755813888 B (512.000000 GB), blocks: 4044525568 B (3.766758 GB)
+SSD Logical write accounting (program-side):
+  - map pages written:     2967822336 B (2.764000 GB)
+  - map pages written cnt:     724566 
+  - map pages read cnt:     2929 
+  - map max end offset:    549755813888 B (512.000000 GB)
+=====================================================
+
+Key Metrics:
+        ioCount:                         499573
+        algorithmRunningDuration:        103872.454 (ms)
+        accuracy:                        100.00
+        memoryUse:                       0 (KB)
+
+指标写入文件 ./metrics.txt
+[1] + Done                       "/usr/bin/gdb" --interpreter=mi --tty=${DbgTerm} 0<"/tmp/Microsoft-MIEngine-In-svytohjn.lwp" 1>"/tmp/Microsoft-MIEngine-Out-jzpkvrw5.ior"
+```
+
+TPC占用缩减4倍：111207.350 (ms)
+TPC占用缩减16倍：111828.695 (ms)
+缩减256倍：106009.099 (ms)
+缩减8192倍：100912.930 (ms)
+其实没什么太大变化。
+
+## 改动文件输入输出后 12GB
+
+```
+Welcome to HW project.
+The input file path is: ../trace2.txt
+The output file path is: ../output2.txt
+The validate file path is: ../read_result2.txt
+io count = 501000000
+inputFile = ../trace2.txt
+Start AlgorithmRun
+Progress: 99%
+================ Resource Report: AlgorithmRun summary ================
+Configures:
+  - Multi-threads: OFF 
+  - Total(Max) LPNS:     68719476736 pages (= 262144.000000 GB)
+  - Max Cache Pages (Entries) in CMT:   0 entries ( 48 B per entry) (about 0.000000 GB)
+  - CMT Hash Table Size:    134217728 buckets
+  - GTD Size:     134217728 entries (= 1.000000 GB)
+  - TPC Max Pages:    524288 pages (= 2.000000 GB)
+  - TPC Hash Table Size:    8388608 buckets
+Heap Memory (current / peak): 4319066392 B (4.022444 GB) / 4319066392 B (4.022444 GB)
+  - Control structures:   136 B (0.000000 GB)
+  - CMT entries:      0 B (0.000000 GB)
+  - GTD uses:      1073741824 B (1.000000 GB)
+  - CMT hash table:   0 B (0.000000 GB)
+  - free cmt entry cnt:     0 , 0 B (0.000000 GB)
+  - used cmt entry cnt:     0 , 0 B (0.000000 GB)
+  - CMT hit ratio:     -nan (0 / 0)
+  - TPC hit ratio:     0.996391 (499191680 / 501000000)
+  - CMT dirty entry handle cnt (not including FTLDestory):     0
+  - TPC dirty entry handle cnt (not including FTLDestory):     1180112
+  - TPC uses (include TPC hash table):      96468992 B (0.089844 GB)
+  - TPC pages:    524288 pages,  2147483648 B (2.000000 GB)
+SSD Usage (from filesystem stat):
+  - map.ssd size:   549755813888 B (512.000000 GB), blocks: 6864240640 B (6.392822 GB)
+SSD Logical write accounting (program-side):
+  - map pages written:     4833738752 B (4.501770 GB)
+  - map pages written cnt:     1180112 
+  - map pages read cnt:     336429 
+  - map max end offset:    549755813888 B (512.000000 GB)
+=====================================================
+
+Key Metrics:
+        ioCount:                         500026
+        algorithmRunningDuration:        203878.474 (ms)
+        accuracy:                        100.00
+        memoryUse:                       0 (KB)
+
+指标写入文件 ./metrics.txt
+[1] + Done                       "/usr/bin/gdb" --interpreter=mi --tty=${DbgTerm} 0<"/tmp/Microsoft-MIEngine-In-3jif1jw2.fxg" 1>"/tmp/Microsoft-MIEngine-Out-ogk03f52.fxk"
+```
+
+## 内存缩减 12GB
+
+```
+Welcome to HW project.
+The input file path is: ../trace2.txt
+The output file path is: ../output2.txt
+The validate file path is: ../read_result2.txt
+io count = 501000000
+inputFile = ../trace2.txt
+Start AlgorithmRun
+Progress: 99%
+================ Resource Report: AlgorithmRun summary ================
+Configures:
+  - Multi-threads: OFF 
+  - Total(Max) LPNS:     501000001 pages (= 1911.163334 GB)
+  - Max Cache Pages (Entries) in CMT:   0 entries ( 48 B per entry) (about 0.000000 GB)
+  - CMT Hash Table Size:    4096 buckets
+  - GTD Size:     978516 entries (= 0.007291 GB)
+  - TPC Max Pages:    64 pages (= 0.000244 GB)
+  - TPC Hash Table Size:    1024 buckets
+Heap Memory (current / peak): 1009601950 B (0.940265 GB) / 1009601950 B (0.940265 GB)
+  - Control structures:   152 B (0.000000 GB)
+  - CMT entries:      0 B (0.000000 GB)
+  - GTD uses:      7828128 B (0.007291 GB)
+  - CMT hash table:   0 B (0.000000 GB)
+  - free cmt entry cnt:     0 , 0 B (0.000000 GB)
+  - used cmt entry cnt:     0 , 0 B (0.000000 GB)
+  - CMT hit ratio:     -nan (0 / 0)
+  - TPC hit ratio:     0.996055 (499023494 / 501000000)
+  - CMT dirty entry handle cnt (not including FTLDestory):     0
+  - TPC dirty entry handle cnt (not including FTLDestory):     1476256
+  - TPC uses (include TPC hash table):      11776 B (0.000011 GB)
+  - TPC pages:    64 pages,  262144 B (0.000244 GB)
+SSD Usage (from filesystem stat):
+  - map.ssd size:   549755813888 B (512.000000 GB), blocks: 12058480640 B (11.230335 GB)
+SSD Logical write accounting (program-side):
+  - map pages written:     6046744576 B (5.631470 GB)
+  - map pages written cnt:     1476256 
+  - map pages read cnt:     999943 
+  - map max end offset:    4000002048 B (3.725292 GB)
+=====================================================
+
+Key Metrics:
+        ioCount:                         500262
+        algorithmRunningDuration:        195481.159 (ms)
+        accuracy:                        100.00
+        memoryUse:                       0 (KB)
+
+指标写入文件 ./metrics.txt
+[1] + Done                       "/usr/bin/gdb" --interpreter=mi --tty=${DbgTerm} 0<"/tmp/Microsoft-MIEngine-In-hvl5yeof.4yv" 1>"/tmp/Microsoft-MIEngine-Out-4lgpmxop.ee5"
+```
+
+## 对小样例特殊处理：
+
+```
+Welcome to HW project.
+The input file path is: ../dataset/input_random.txt
+The output file path is: ../dataset/output_random.txt
+The validate file path is: ../dataset/val_random.txt
+io count = 26048576
+inputFile = ../dataset/input_random.txt
+Start AlgorithmRun
+Progress: 99%
+================ Resource Report: AlgorithmRun summary (SMALL INPUT)================
+Configures:
+  - Multi-threads: OFF 
+  - Total(Max) LPNS:     26048577 pages (= 99.367435 GB)
+  - Max Cache Pages (Entries) in CMT:   0 entries ( 48 B per entry) (about 0.000000 GB)
+  - CMT Hash Table Size:    4096 buckets
+Heap Memory (current / peak): 208388768 B (0.194077 GB) / 208388768 B (0.194077 GB)
+  - Control structures:   208388768 B (0.194077 GB)
+SSD Usage (from filesystem stat):
+  - map.ssd size:   0 B (0.000000 GB), blocks: 0 B (0.000000 GB)
+SSD Logical write accounting (program-side):
+  - map pages written:     0 B (0.000000 GB)
+  - map pages written cnt:     0 
+  - map pages read cnt:     0 
+  - map max end offset:    0 B (0.000000 GB)
+=====================================================
+
+Key Metrics:
+        ioCount:                         524609
+        algorithmRunningDuration:        8649.758 (ms)
+        accuracy:                        100.00
+        memoryUse:                       0 (KB)
+
+指标写入文件 ./metrics.txt
+[1] + Done                       "/usr/bin/gdb" --interpreter=mi --tty=${DbgTerm} 0<"/tmp/Microsoft-MIEngine-In-apq002do.l5i" 1>"/tmp/Microsoft-MIEngine-Out-gbjiblro.kxs"
 ```

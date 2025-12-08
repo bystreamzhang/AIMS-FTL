@@ -17,8 +17,13 @@
 //#define USE_CMT
 
 //#define MULTI_THREADS
-
 #define DEBUG_FTL
+
+//决赛添加
+#define FAST_DESTROY
+#define FAST_SMALL_INPUT
+#define SMALL_INPUT_THRESHOLD (30000000ull)
+#define FLEXIBLE_LBA_SIZE
 
 // 用0表示无效PPA，mpn要加1才能得到对应ppn，ppn要减1得到mpn。
 // 输入ppn如果为0：暂时也视为无效ppa
@@ -31,24 +36,11 @@ enum {
     DIRTY = 1
 } DIRTY_STATE;
 
-#define MAX_MEMORY // ！！！提交到平台时需要假设有16G的内存，参数不能调太小否则评测可能会很慢！但也得设保险一点避免超内存
+#define MCACHE_PAGES (1u << 10)
+#define CMT_HASH_SIZE (1u << 12)
+#define TPC_MAX_PAGES    (1u << 6)
+#define TPC_HASH_SIZE    (1u << 10) // TPC的哈希表和page的大小差距很大，容量可以设大些
 
-// 虽然说有16GB内存，但未必都能用于程序，所以留点余量。下面几个大组件加起来大概8GB
-#ifdef MAX_MEMORY
-
-#define MCACHE_PAGES (1u << 25) // 假设分配8G给CMT，每个条目是48B，约有1.8e8条目(178,956,970),
-#define CMT_HASH_SIZE (1u << 27) // 考虑到CMT哈希表大小和CMT可能接近，保险起见CMT取1<<25 (33,554,432)，此时CMT大小最多1.5GB。哈希表大小是4倍但条目是8B，最多使用1GB空间
-#define TPC_MAX_PAGES    (1u << 19)  // 假设分配6GB给TPC的page，大概能存1.57e6个页, 取1<<19 (524,288)。此时TPC最多使用2GB
-#define TPC_HASH_SIZE    (1u << 23) // TPC的哈希表和page的大小差距就很大了，容量可以设大些
-
-#else
-
-#define MCACHE_PAGES (1u << 20) // Max Cache Pages in CMT
-#define CMT_HASH_SIZE (1u << 22) // 最好取2的幂次方，就可将取模改为按位与
-#define TPC_MAX_PAGES    (1u << 14)  // 16K 页 ≈ 64MB
-#define TPC_HASH_SIZE    (1u << 18)
-
-#endif
 
 #define MAP_PAGE_BYTES 4096u
 #define LBA_MAX_PLUS1 (1ull << 36)
@@ -162,6 +154,8 @@ static void FTLFree(void *p, size_t size)
 
 static int open_file(const char *path, bool write)
 {
+    // 如果ssd文件存在，将其内容清空(O_TRUNC)
+    //int flags = write ? (O_CREAT | O_RDWR | O_TRUNC) : O_RDONLY;
     int flags = write ? (O_CREAT | O_RDWR) : O_RDONLY;
     int fd = open(path, flags, 0644);
     if (fd < 0)
@@ -500,6 +494,11 @@ typedef struct
     int fd_map;
 
     tpc tpc;
+
+    #ifdef FAST_SMALL_INPUT
+    bool small_input_mode;
+    uint64_t *mapping;
+    #endif
 } FTL;
 
 static FTL *g = NULL;
@@ -721,6 +720,38 @@ static tpc_page *tpc_get_page(FTL *d, uint64_t mpn, int is_write)
 
 static void PrintResourceReport(const char *title, FTL *d)
 {
+    #ifdef FAST_SMALL_INPUT
+    if(d->small_input_mode){
+            fprintf(stdout, "\n================ Resource Report: %s (SMALL INPUT)================\n", title);
+        fprintf(stdout, "Configures:\n");
+        #ifdef MULTI_THREADS
+        fprintf(stdout, "  - Multi-threads: ON \n");
+        #else
+        fprintf(stdout, "  - Multi-threads: OFF \n");
+        #endif
+        fprintf(stdout, "  - Total(Max) LPNS:     %" PRIu64 " pages (= %.6f GB)\n", d->total_lpns, to_gb(d->total_lpns * 4096ull));
+        fprintf(stdout, "  - Max Cache Pages (Entries) in CMT:   %" PRIu64 " entries ( %" PRIu64 " B per entry) (about %.6f GB)\n", d->tt_entries, sizeof(cmt_entry), to_gb(d->tt_entries * sizeof(cmt_entry)));
+        fprintf(stdout, "  - CMT Hash Table Size:    %" PRIu64 " buckets\n", CMT_HASH_SIZE);
+
+        uint64_t total = g_memstats.total_used;
+        fprintf(stdout, "Heap Memory (current / peak): %" PRIu64 " B (%.6f GB) / %" PRIu64 " B (%.6f GB)\n",
+                total, to_gb(total), g_memstats.peak_used, to_gb(g_memstats.peak_used));
+        fprintf(stdout, "  - Control structures:   %" PRIu64 " B (%.6f GB)\n", g_memstats.ctrl_used, to_gb(g_memstats.ctrl_used));
+
+        fprintf(stdout, "SSD Usage (from filesystem stat):\n");
+        fprintf(stdout, "  - map.ssd size:   %" PRIu64 " B (%.6f GB), blocks: %" PRIu64 " B (%.6f GB)\n",
+                g_ssdstats.map_st_size, to_gb(g_ssdstats.map_st_size),
+                g_ssdstats.map_st_blocks, to_gb(g_ssdstats.map_st_blocks));
+
+        fprintf(stdout, "SSD Logical write accounting (program-side):\n");
+        fprintf(stdout, "  - map pages written:     %" PRIu64 " B (%.6f GB)\n", g_ssdstats.map_pages_written_bytes, to_gb(g_ssdstats.map_pages_written_bytes));
+        fprintf(stdout, "  - map pages written cnt:     %" PRIu64 " \n", g_ssdstats.map_pages_written_cnt);
+        fprintf(stdout, "  - map pages read cnt:     %" PRIu64 " \n", g_ssdstats.map_pages_read_cnt);
+        fprintf(stdout, "  - map max end offset:    %" PRIu64 " B (%.6f GB)\n", g_ssdstats.map_max_off, to_gb(g_ssdstats.map_max_off));
+        fprintf(stdout, "=====================================================\n");
+        return;
+    }
+    #endif
     fprintf(stdout, "\n================ Resource Report: %s ================\n", title);
     fprintf(stdout, "Configures:\n");
     #ifdef MULTI_THREADS
@@ -930,7 +961,7 @@ static cmt_entry *cache_get_entry(FTL *d, uint64_t lpn)
 }
 
 // 生命周期与API
-void FTLInit()
+void FTLInit(uint64_t len)
 {
     if (g)
         return;
@@ -938,11 +969,23 @@ void FTLInit()
     memset(g, 0, sizeof(FTL));
 
     const uint64_t entries_per_page = (uint64_t)EPP;
+    #ifdef FLEXIBLE_LBA_SIZE
+    uint64_t total_lpns = len + 1;
+    #else
     uint64_t total_lpns = LBA_MAX_PLUS1;
+    #endif
     uint64_t total_mpns = (total_lpns + entries_per_page - 1ull) / entries_per_page;
-
     g->total_lpns = total_lpns;
     g->total_mpns = total_mpns;
+
+    #ifdef FAST_SMALL_INPUT
+    g->small_input_mode = false;
+    if(len <= SMALL_INPUT_THRESHOLD){
+        g->small_input_mode = true;
+        g->mapping = (uint64_t *)FTL_MALLOC_CTRL(sizeof(uint64_t) * total_lpns);
+        return;
+    }
+    #endif
 
     g->gtd = (uint64_t *)FTL_MALLOC_GTD(g->total_mpns);
     //memset(g->gtd, 0, g->total_mpns * sizeof(uint64_t));
@@ -981,6 +1024,9 @@ void FTLInit()
 
 void FTLDestroy()
 {
+    #ifdef FAST_DESTROY
+    return;
+    #else
     if (!g) return;
     #ifdef USE_CMT
     for (uint64_t i = 0; i < g->tt_entries; ++i) {
@@ -1011,9 +1057,16 @@ void FTLDestroy()
     g->gtd = NULL;
     FTL_FREE_CTRL(g, sizeof(FTL));
     g = NULL;
+    #endif
 }
 
 uint64_t FTLRead(uint64_t lba) {
+    #ifdef FAST_SMALL_INPUT
+    if(g->small_input_mode){
+        return g->mapping[lba];
+    }
+    #endif
+
     #ifdef USE_CMT
     cmt_entry *n = cache_get_entry(g, lba);
     return n->ppn;
@@ -1024,6 +1077,13 @@ uint64_t FTLRead(uint64_t lba) {
 }
 
 bool FTLModify(uint64_t lba, uint64_t ppn) {
+    #ifdef FAST_SMALL_INPUT
+    if(g->small_input_mode){
+        g->mapping[lba] = ppn;
+        return true;
+    }
+    #endif
+
     #ifdef USE_CMT
     cmt_entry *n = cache_get_entry(g, lba);
     n->ppn = ppn;
@@ -1184,22 +1244,31 @@ static int choose_worker_count(void){
 }
 #endif
 
-uint32_t AlgorithmRun(IOVector *ioVector, const char *outputFile) {
-    struct timeval start, end;
-    long seconds, useconds;
-    double during_us;
+void PercentageBasedProgress(uint64_t current, uint64_t total, int* lastPercent) {
+    int currentPercent = (current * 100) / total;
+    
+    if (currentPercent != *lastPercent) {
+        printf("\rProgress: %d%%", currentPercent);
+        fflush(stdout);
+        *lastPercent = currentPercent;
+    }
+}
 
+uint32_t AlgorithmRun(IOVector *ioVector, const char *outputFile) {
     uint64_t ret;
-    FILE *file = fopen(outputFile, "w");
-    if (!file)
-    {
+    int lastPercent = -1;
+    FILE *output = fopen(outputFile, "w");
+    if (!output) {
         perror("Failed to open outputFile");
         exit(EXIT_FAILURE);
     }
+    FILE *input = fopen(ioVector->inputFile, "r");
+    char line[256];
+    fgets(line, sizeof(line), input);
+    fgets(line, sizeof(line), input);
 
-    FTLInit();
-
-    gettimeofday(&start, NULL);
+    //可选，FTL初始化
+    FTLInit(ioVector->len);
 
     #ifdef MULTI_THREADS
     Pipeline pl;
@@ -1235,19 +1304,15 @@ uint32_t AlgorithmRun(IOVector *ioVector, const char *outputFile) {
 
     #ifndef MULTI_THREADS
     for (uint64_t i = 0; i < ioVector->len; ++i) {
-        if (ioVector->ioArray[i].type == IO_READ) {
-            ret = FTLRead(ioVector->ioArray[i].lba);
-            fprintf(file, "%llu\n", ret);
+        fgets(line, sizeof(line), input);
+        sscanf(line, "%u %llu %llu", &ioVector->ioUnit.type, &ioVector->ioUnit.lba, &ioVector->ioUnit.ppn);
+        if (ioVector->ioUnit.type == IO_READ) {
+            ret = FTLRead(ioVector->ioUnit.lba);
+            fprintf(output, "%llu\n", ret);
+        } else {
+            FTLModify(ioVector->ioUnit.lba, ioVector->ioUnit.ppn);
         }
-        else {
-            FTLModify(ioVector->ioArray[i].lba, ioVector->ioArray[i].ppn);
-        }
-        #ifdef DEBUG_FTL
-        if((i & ((1u<<20)-1)) == 0 || i == ioVector->len - 1) {
-            printf("\rProcessing IO %u / %llu", i + 1, ioVector->len);
-            fflush(stdout);
-        }
-        #endif
+        PercentageBasedProgress(i, ioVector->len, &lastPercent);
     }
     #else
 
@@ -1303,8 +1368,6 @@ uint32_t AlgorithmRun(IOVector *ioVector, const char *outputFile) {
         pthread_join(tids[i], NULL);
     #endif
 
-    gettimeofday(&end, NULL);
-
     ssdstats_refresh_from_fs(g->fd_map);
     PrintResourceReport("AlgorithmRun summary", g);
 
@@ -1318,13 +1381,10 @@ uint32_t AlgorithmRun(IOVector *ioVector, const char *outputFile) {
     pthread_cond_destroy(&pl.res_cv);
     #endif
 
+    // 可选，FTL销毁
     FTLDestroy();
-    fclose(file);
-
-    seconds = end.tv_sec - start.tv_sec;
-    useconds = end.tv_usec - start.tv_usec;
-    during_us = ((seconds) * 1000000.0 + useconds);
-    printf("algorithmRunningDuration:\t %f us\n", during_us);
+    fclose(output);
+    fclose(input);
 
     return RETURN_OK;
 }

@@ -24,33 +24,17 @@ int ParseFile(const char *filename, IOVector *ioVector)
 
     char line[256];
     int64_t ioCount = 0;
-    IOUnit *ioArray = NULL;
 
-    while (fgets(line, sizeof(line), file)) {
-        if (strncmp(line, "io count", 8) == 0) {
-            if (fgets(line, sizeof(line), file)) {
+    fgets(line, sizeof(line), file);
+    if (strncmp(line, "io count", 8) == 0) {
+        if (fgets(line, sizeof(line), file)) {
                 sscanf(line, "%u", &ioVector->len);
-                ioArray = (IOUnit *)malloc(ioVector->len * sizeof(IOUnit));
-                printf("input io count = %u\n", ioVector->len);
-            }
-        } else {
-            IOUnit io;
-            sscanf(line, "%u %llu %llu", &io.type, &io.lba, &io.ppn);
-            ioArray[ioCount] = io;
-            ioCount++;
+                printf("io count = %u\n", ioVector->len);
         }
     }
+    ioVector->inputFile = strdup(filename);
+    printf("inputFile = %s\n", ioVector->inputFile);
     fclose(file);
-
-    if (ioVector->len != ioCount) {
-        printf("[Error] len(%lld) != ioCount(%lld)\n", ioVector->len, ioCount);
-        return RETURN_ERROR;
-    }
-    if (ioVector->len > MAX_IO_NUM) {
-        printf("[Error] IO number(%u) should less than %u\n", ioVector->len, MAX_IO_NUM);
-        return RETURN_ERROR;
-    }
-    ioVector->ioArray = ioArray;
 
     return RETURN_OK;
 }
@@ -85,7 +69,7 @@ int GetIOCount(const char *filename1, const char *filename2)
 void PrintMetrics(const KeyMetrics *metrics)
 {
     printf("\nKey Metrics:\n");
-    printf("\ttestIOCount:\t\t\t %u\n", metrics->testIOCount);
+    printf("\tioCount:\t\t\t %u\n", metrics->testIOCount);
     printf("\talgorithmRunningDuration:\t %.3f (ms)\n", metrics->algorithmRunningDuration);
     printf("\taccuracy:\t\t\t %.2f\n", metrics->accuracy);
     printf("\tmemoryUse:\t\t\t %ld (KB)\n", metrics->memoryUse);
@@ -101,7 +85,7 @@ void SaveKeyMetricsToFile(const char *filename, const KeyMetrics *metrics)
     }
 
     fprintf(file, "/* 关键指标结构体 */\n");
-    fprintf(file, "testIOCount: %u \n", metrics->testIOCount);
+    fprintf(file, "ioCount: %u \n", metrics->testIOCount);
     fprintf(file, "algorithmRunningDuration(ms): %.2f \n", metrics->algorithmRunningDuration);
     fprintf(file, "memoryUse(ms): %lu \n", metrics->memoryUse);
     fprintf(file, "accuracy: %.2f \n", metrics->accuracy);
@@ -137,8 +121,6 @@ double CompareFiles(const char *filename1, const char *filename2)
             totalLines++;
             if (num1 == num2) {
                 matchingLines++;
-            } else {
-                // printf("Mismatch at line %lu: %lu != %lu\n", totalLines, num1, num2);
             }
         } else {
             if (fgets(line2, sizeof(line2), file2)) {
@@ -220,6 +202,7 @@ int main(int argc, char *argv[])
     gettimeofday(&start, NULL);
 
     /* FTL算法执行 */
+    printf("Start AlgorithmRun\n");
     AlgorithmRun(ioVector, outputFile);
 
     gettimeofday(&end, NULL);  // 记录结束时间
@@ -242,8 +225,8 @@ int main(int argc, char *argv[])
     PrintMetrics(&metrics);
     /* 保存指标数据到文件 */
     SaveKeyMetricsToFile("./metrics.txt", &metrics);
-
-    free(ioVector->ioArray);
+    
+    free(ioVector->inputFile);
     free(ioVector);
     return 0;
 }
