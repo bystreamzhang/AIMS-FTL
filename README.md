@@ -12,6 +12,9 @@ cd build
 cmake ..
 make
 ./project_hw -i ../dataset/input_seq.txt -o ../dataset/output_seq.txt -v ../dataset/val_seq.txt
+# 或者如下，取决于文件路径
+./project_hw -i ../trace.txt -o ../output.txt -v ../read_result.txt
+# 也可以使用.vscode文件夹的tasks.json和launch.json
 ```
 
 ```shell
@@ -46,6 +49,12 @@ Key Metrics:
 
 指标写入文件 ./metrics.txt
 ```
+
+## 测试数据生成
+
+使用`build_dataset2.c`等。可自行调整参数。
+
+会生成trace.txt和read_result.txt文件。
 
 ## 性能测试
 
